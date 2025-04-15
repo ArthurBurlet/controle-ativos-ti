@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Ativos de T.I</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    form { margin-bottom: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    .status-em-uso { background-color: #d4edda; }
+    .status-manutencao { background-color: #fff3cd; }
+    .status-descartado { background-color: #f8d7da; }
+  </style>
+</head>
+<body>
+  <h1>Controle de Ativos de T.I</h1>
+
+  <form id="ativoForm">
+    <label>Tipo de Ativo: <input type="text" id="tipo"></label>
+    <label>Descrição: <input type="text" id="descricao"></label>
+    <label>Marca/Modelo: <input type="text" id="modelo"></label>
+    <label>Número de Série: <input type="text" id="numeroSerie"></label>
+    <label>Responsável: <input type="text" id="responsavel"></label>
+    <label>Localização: <input type="text" id="local"></label>
+    <label>Data de Aquisição: <input type="date" id="data"></label>
+    <label>Situação:
+      <select id="status">
+        <option value="em-uso">Em uso</option>
+        <option value="manutencao">Em manutenção</option>
+        <option value="descartado">Descartado</option>
+      </select>
+    </label>
+    <button type="submit">Adicionar Ativo</button>
+  </form>
+
+  <table id="ativosTable">
+    <thead>
+      <tr>
+        <th>Tipo</th>
+        <th>Descrição</th>
+        <th>Marca/Modelo</th>
+        <th>Nº de Série</th>
+        <th>Responsável</th>
+        <th>Local</th>
+        <th>Aquisição</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const form = document.getElementById('ativoForm');
+    const tableBody = document.querySelector('#ativosTable tbody');
+
+    function salvarNoLocalStorage(ativos) {
+      localStorage.setItem('ativosTI', JSON.stringify(ativos));
+    }
+
+    function carregarDoLocalStorage() {
+      return JSON.parse(localStorage.getItem('ativosTI')) || [];
+    }
+
+    function renderizarTabela(ativos) {
+      tableBody.innerHTML = '';
+      ativos.forEach(ativo => {
+        const row = document.createElement('tr');
+        row.className = `status-${ativo.status}`;
+        row.innerHTML = `
+          <td>${ativo.tipo}</td>
+          <td>${ativo.descricao}</td>
+          <td>${ativo.modelo}</td>
+          <td>${ativo.numeroSerie}</td>
+          <td>${ativo.responsavel}</td>
+          <td>${ativo.local}</td>
+          <td>${ativo.data}</td>
+          <td>${ativo.status.replace('-', ' ')}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    let ativos = carregarDoLocalStorage();
+    renderizarTabela(ativos);
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const novoAtivo = {
+        tipo: document.getElementById('tipo').value,
+        descricao: document.getElementById('descricao').value,
+        modelo: document.getElementById('modelo').value,
+        numeroSerie: document.getElementById('numeroSerie').value,
+        responsavel: document.getElementById('responsavel').value,
+        local: document.getElementById('local').value,
+        data: document.getElementById('data').value,
+        status: document.getElementById('status').value
+      };
+
+      ativos.push(novoAtivo);
+      salvarNoLocalStorage(ativos);
+      renderizarTabela(ativos);
+      form.reset();
+    });
+  </script>
+</body>
+</html>
