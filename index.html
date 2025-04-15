@@ -1,112 +1,167 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Controle de Ativos de T.I</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle de Ativos TI</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { text-align: center; }
-    form { margin-bottom: 20px; }
-    label { display: block; margin-top: 10px; }
-    input, select { width: 100%; padding: 8px; margin-top: 4px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background-color: #f4f4f4; }
-    .status-em-uso { background-color: #d4edda; }
-    .status-manutencao { background-color: #fff3cd; }
-    .status-descartado { background-color: #f8d7da; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      margin: 20px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .light-mode {
+      background-color: #ffffff;
+      color: #000000;
+    }
+    label, input, select, button {
+      display: block;
+      margin: 10px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #1e1e1e;
+    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <h1>Controle de Ativos de T.I</h1>
+  <h1>Controle de Ativos - TI</h1>
 
-  <form id="ativoForm">
-    <label>Tipo de Ativo: <input type="text" id="tipo"></label>
-    <label>Descrição: <input type="text" id="descricao"></label>
-    <label>Marca/Modelo: <input type="text" id="modelo"></label>
-    <label>Número de Série: <input type="text" id="numeroSerie"></label>
-    <label>Responsável: <input type="text" id="responsavel"></label>
-    <label>Localização: <input type="text" id="local"></label>
-    <label>Data de Aquisição: <input type="date" id="data"></label>
-    <label>Situação:
-      <select id="status">
-        <option value="em-uso">Em uso</option>
-        <option value="manutencao">Em manutenção</option>
-        <option value="descartado">Descartado</option>
-      </select>
-    </label>
-    <button type="submit">Adicionar Ativo</button>
+  <label for="filtro">Filtrar por setor:</label>
+  <input type="text" id="filtro" placeholder="Digite o setor...">
+
+  <form id="form">
+    <label for="nome">Nome do Ativo:</label>
+    <input type="text" id="nome" required />
+
+    <label for="tipo">Tipo:</label>
+    <input type="text" id="tipo" required />
+
+    <label for="setor">Setor:</label>
+    <input type="text" id="setor" required />
+
+    <label for="numSerie">Número de Série:</label>
+    <input type="text" id="numSerie" required />
+
+    <button type="submit">Salvar</button>
   </form>
 
-  <table id="ativosTable">
+  <button onclick="exportarExcel()">Exportar Excel</button>
+  <button onclick="alternarModo()">Alternar Modo</button>
+
+  <table id="tabela">
     <thead>
       <tr>
+        <th>Nome</th>
         <th>Tipo</th>
-        <th>Descrição</th>
-        <th>Marca/Modelo</th>
-        <th>Nº de Série</th>
-        <th>Responsável</th>
-        <th>Local</th>
-        <th>Aquisição</th>
-        <th>Status</th>
+        <th>Setor</th>
+        <th>Nº Série</th>
+        <th>Ações</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <script>
-    const form = document.getElementById('ativoForm');
-    const tableBody = document.querySelector('#ativosTable tbody');
+    const form = document.getElementById('form');
+    const tabela = document.getElementById('tabela').querySelector('tbody');
+    const filtro = document.getElementById('filtro');
+    let editIndex = null;
 
-    function salvarNoLocalStorage(ativos) {
-      localStorage.setItem('ativosTI', JSON.stringify(ativos));
-    }
+    let ativos = JSON.parse(localStorage.getItem('ativos')) || [];
 
-    function carregarDoLocalStorage() {
-      return JSON.parse(localStorage.getItem('ativosTI')) || [];
-    }
+    const salvarLocal = () => {
+      localStorage.setItem('ativos', JSON.stringify(ativos));
+    };
 
-    function renderizarTabela(ativos) {
-      tableBody.innerHTML = '';
-      ativos.forEach(ativo => {
-        const row = document.createElement('tr');
-        row.className = `status-${ativo.status}`;
+    const atualizarTabela = () => {
+      tabela.innerHTML = '';
+      const termoFiltro = filtro.value.toLowerCase();
+      ativos.forEach((ativo, index) => {
+        if (!ativo.setor.toLowerCase().includes(termoFiltro)) return;
+        const row = tabela.insertRow();
         row.innerHTML = `
+          <td>${ativo.nome}</td>
           <td>${ativo.tipo}</td>
-          <td>${ativo.descricao}</td>
-          <td>${ativo.modelo}</td>
-          <td>${ativo.numeroSerie}</td>
-          <td>${ativo.responsavel}</td>
-          <td>${ativo.local}</td>
-          <td>${ativo.data}</td>
-          <td>${ativo.status.replace('-', ' ')}</td>
+          <td>${ativo.setor}</td>
+          <td>${ativo.numSerie}</td>
+          <td>
+            <button onclick="editar(${index})">Editar</button>
+            <button onclick="excluir(${index})">Excluir</button>
+          </td>
         `;
-        tableBody.appendChild(row);
       });
-    }
+    };
 
-    let ativos = carregarDoLocalStorage();
-    renderizarTabela(ativos);
-
-    form.addEventListener('submit', function(e) {
+    form.onsubmit = (e) => {
       e.preventDefault();
-
-      const novoAtivo = {
-        tipo: document.getElementById('tipo').value,
-        descricao: document.getElementById('descricao').value,
-        modelo: document.getElementById('modelo').value,
-        numeroSerie: document.getElementById('numeroSerie').value,
-        responsavel: document.getElementById('responsavel').value,
-        local: document.getElementById('local').value,
-        data: document.getElementById('data').value,
-        status: document.getElementById('status').value
+      const ativo = {
+        nome: form.nome.value,
+        tipo: form.tipo.value,
+        setor: form.setor.value,
+        numSerie: form.numSerie.value
       };
-
-      ativos.push(novoAtivo);
-      salvarNoLocalStorage(ativos);
-      renderizarTabela(ativos);
+      if (editIndex !== null) {
+        ativos[editIndex] = ativo;
+        editIndex = null;
+      } else {
+        ativos.push(ativo);
+      }
+      salvarLocal();
+      atualizarTabela();
       form.reset();
-    });
+    };
+
+    const editar = (index) => {
+      const ativo = ativos[index];
+      form.nome.value = ativo.nome;
+      form.tipo.value = ativo.tipo;
+      form.setor.value = ativo.setor;
+      form.numSerie.value = ativo.numSerie;
+      editIndex = index;
+    };
+
+    const excluir = (index) => {
+      if (confirm('Tem certeza que deseja excluir este ativo?')) {
+        ativos.splice(index, 1);
+        salvarLocal();
+        atualizarTabela();
+      }
+    };
+
+    const exportarExcel = () => {
+      let csv = 'Nome,Tipo,Setor,Número de Série\n';
+      ativos.forEach(ativo => {
+        csv += `${ativo.nome},${ativo.tipo},${ativo.setor},${ativo.numSerie}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ativos-ti.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    const alternarModo = () => {
+      document.body.classList.toggle('light-mode');
+    };
+
+    filtro.oninput = atualizarTabela;
+
+    atualizarTabela();
   </script>
 </body>
 </html>
