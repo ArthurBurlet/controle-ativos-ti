@@ -7,15 +7,15 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #ffffff;
+      background-color: #085a89; /* Azul */
+      color: #ffffff; /* Branco */
       margin: 0;
       padding: 20px;
       transition: background-color 0.3s, color 0.3s;
     }
     .light-mode {
-      background-color: #ffffff;
-      color: #000000;
+      background-color: #ffffff; /* Branco */
+      color: #085a89; /* Azul */
     }
     h1 {
       text-align: center;
@@ -27,7 +27,16 @@
       gap: 10px;
     }
     .buttons-container button {
-      margin-top: 10px;
+      background-color: #085a89;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .buttons-container button:hover {
+      background-color: #064a6e;
     }
     label, input, select, button {
       display: block;
@@ -37,14 +46,15 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      border: 1px solid #085a89;
     }
     th, td {
-      border: 1px solid #444;
+      border: 1px solid #085a89;
       padding: 8px;
       text-align: left;
     }
     th {
-      background-color: #1e1e1e;
+      background-color: #064a6e;
     }
     .actions-cell {
       display: flex;
@@ -67,7 +77,7 @@
       padding-top: 60px;
     }
     .modal-content {
-      background-color: #fff;
+      background-color: #ffffff;
       margin: 5% auto;
       padding: 20px;
       border: 1px solid #888;
@@ -77,6 +87,26 @@
     }
     .modal-content button {
       margin-top: 10px;
+      background-color: #085a89;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .modal-content button:hover {
+      background-color: #064a6e;
+    }
+
+    /* Estilo para o filtro */
+    #filtro {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #085a89;
+      background-color: #085a89;
+      color: #fff;
     }
   </style>
 </head>
@@ -87,6 +117,7 @@
     <button onclick="alternarModo()">Alternar Modo</button>
   </div>
 
+  <!-- Campo de filtro agora está diretamente acima da tabela -->
   <div>
     <label for="filtro">Filtrar por setor:</label>
     <input type="text" id="filtro" placeholder="Digite o setor...">
