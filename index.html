@@ -9,12 +9,25 @@
       font-family: Arial, sans-serif;
       background-color: #121212;
       color: #ffffff;
-      margin: 20px;
+      margin: 0;
+      padding: 20px;
       transition: background-color 0.3s, color 0.3s;
     }
     .light-mode {
       background-color: #ffffff;
       color: #000000;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .buttons-container {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .buttons-container button {
+      margin-top: 10px;
     }
     label, input, select, button {
       display: block;
@@ -33,14 +46,51 @@
     th {
       background-color: #1e1e1e;
     }
+    .actions-cell {
+      display: flex;
+      gap: 10px;
+    }
     .hidden { display: none; }
+
+    /* Estilos para o Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0,0,0);
+      background-color: rgba(0,0,0,0.4);
+      padding-top: 60px;
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .modal-content button {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <h1>Controle de Ativos - TI</h1>
 
-  <label for="filtro">Filtrar por setor:</label>
-  <input type="text" id="filtro" placeholder="Digite o setor...">
+  <div class="buttons-container">
+    <button onclick="alternarModo()">Alternar Modo</button>
+  </div>
+
+  <div>
+    <label for="filtro">Filtrar por setor:</label>
+    <input type="text" id="filtro" placeholder="Digite o setor...">
+  </div>
 
   <form id="form">
     <label for="nome">Nome do Ativo:</label>
@@ -58,9 +108,6 @@
     <button type="submit">Salvar</button>
   </form>
 
-  <button onclick="exportarExcel()">Exportar Excel</button>
-  <button onclick="alternarModo()">Alternar Modo</button>
-
   <table id="tabela">
     <thead>
       <tr>
@@ -73,6 +120,19 @@
     </thead>
     <tbody></tbody>
   </table>
+
+  <div class="buttons-container">
+    <button onclick="abrirModalExportacao()">Exportar Excel</button>
+  </div>
+
+  <!-- Modal de Confirmação -->
+  <div id="modalExport" class="modal">
+    <div class="modal-content">
+      <p>Tem certeza que deseja exportar os dados?</p>
+      <button onclick="exportarExcel()">Sim</button>
+      <button onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
 
   <script>
     const form = document.getElementById('form');
@@ -97,7 +157,7 @@
           <td>${ativo.tipo}</td>
           <td>${ativo.setor}</td>
           <td>${ativo.numSerie}</td>
-          <td>
+          <td class="actions-cell">
             <button onclick="editar(${index})">Editar</button>
             <button onclick="excluir(${index})">Excluir</button>
           </td>
@@ -153,6 +213,15 @@
       a.download = 'ativos-ti.csv';
       a.click();
       URL.revokeObjectURL(url);
+      fecharModal();
+    };
+
+    const abrirModalExportacao = () => {
+      document.getElementById('modalExport').style.display = 'block';
+    };
+
+    const fecharModal = () => {
+      document.getElementById('modalExport').style.display = 'none';
     };
 
     const alternarModo = () => {
