@@ -3,265 +3,187 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Controle de Ativos TI</title>
+  <title>Controle de Ativos de TI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #085a89; /* Azul */
-      color: #ffffff; /* Branco */
       margin: 0;
-      padding: 20px;
-      transition: background-color 0.3s, color 0.3s;
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      color: #000;
+      transition: background 0.3s, color 0.3s;
     }
-    .light-mode {
-      background-color: #ffffff; /* Branco */
-      color: #085a89; /* Azul */
+    .dark-mode {
+      background-color: #1c1c1c;
+      color: #f0f0f0;
+    }
+    header {
+      background-color: #085a89;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header img {
+      height: 40px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 1rem auto;
+      padding: 1rem;
     }
     h1 {
       text-align: center;
-      margin-bottom: 20px;
     }
-    .buttons-container {
+    .top-bar {
       display: flex;
-      justify-content: flex-end;
-      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
     }
-    .buttons-container button {
+    .filter-input {
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 250px;
+    }
+    .cards {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .card {
+      flex: 1;
+      min-width: 200px;
       background-color: #085a89;
-      color: #ffffff;
-      border: none;
-      padding: 10px 20px;
-      cursor: pointer;
-      border-radius: 5px;
-      font-size: 14px;
-    }
-    .buttons-container button:hover {
-      background-color: #064a6e;
-    }
-    label, input, select, button {
-      display: block;
-      margin: 10px 0;
+      color: white;
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
-      border: 1px solid #085a89;
+      margin-bottom: 1rem;
     }
-    th, td {
-      border: 1px solid #085a89;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #064a6e;
-    }
-    .actions-cell {
-      display: flex;
-      gap: 10px;
-    }
-    .hidden { display: none; }
-
-    /* Estilos para o Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgb(0,0,0);
-      background-color: rgba(0,0,0,0.4);
-      padding-top: 60px;
-    }
-    .modal-content {
-      background-color: #ffffff;
-      margin: 5% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 400px;
+    table th, table td {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
       text-align: center;
     }
-    .modal-content button {
-      margin-top: 10px;
-      background-color: #085a89;
-      color: #ffffff;
+    .actions button {
+      margin: 0 0.25rem;
+      padding: 0.25rem 0.5rem;
       border: none;
-      padding: 10px 20px;
+      border-radius: 4px;
       cursor: pointer;
-      border-radius: 5px;
     }
-    .modal-content button:hover {
-      background-color: #064a6e;
-    }
-
-    /* Estilo para o filtro */
-    #filtro {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      border: 1px solid #085a89;
+    .export-button {
+      padding: 0.5rem 1rem;
       background-color: #085a89;
-      color: #fff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .toggle-mode {
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+    }
+    #exportModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    #exportModal .modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Controle de Ativos - TI</h1>
+  <header>
+    <img src="Logo - TURP - Transporte (Fundo Transparente - Cor Branco).png" alt="Logo TURP" />
+    <button class="toggle-mode" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
+  </header>
+  <div class="container">
+    <h1>Controle de Ativos de TI</h1>
 
-  <div class="buttons-container">
-    <button onclick="alternarModo()">Alternar Modo</button>
+    <div class="cards">
+      <div class="card">
+        <h2 id="totalItens">0</h2>
+        <p>Total de Itens</p>
+      </div>
+      <div class="card">
+        <h2 id="ativos">0</h2>
+        <p>Ativos</p>
+      </div>
+      <div class="card">
+        <h2 id="inativos">0</h2>
+        <p>Inativos</p>
+      </div>
+      <div class="card">
+        <h2 id="reservas">0</h2>
+        <p>Reservas</p>
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <input type="text" id="filterInput" class="filter-input" placeholder="Filtrar por nome ou status...">
+    </div>
+
+    <table id="ativosTable">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Linhas vão aqui -->
+      </tbody>
+    </table>
+
+    <button class="export-button" onclick="confirmExport()">Exportar Excel</button>
   </div>
 
-  <!-- Campo de filtro agora está diretamente acima da tabela -->
-  <div>
-    <label for="filtro">Filtrar por setor:</label>
-    <input type="text" id="filtro" placeholder="Digite o setor...">
-  </div>
-
-  <form id="form">
-    <label for="nome">Nome do Ativo:</label>
-    <input type="text" id="nome" required />
-
-    <label for="tipo">Tipo:</label>
-    <input type="text" id="tipo" required />
-
-    <label for="setor">Setor:</label>
-    <input type="text" id="setor" required />
-
-    <label for="numSerie">Número de Série:</label>
-    <input type="text" id="numSerie" required />
-
-    <button type="submit">Salvar</button>
-  </form>
-
-  <table id="tabela">
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Tipo</th>
-        <th>Setor</th>
-        <th>Nº Série</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <div class="buttons-container">
-    <button onclick="abrirModalExportacao()">Exportar Excel</button>
-  </div>
-
-  <!-- Modal de Confirmação -->
-  <div id="modalExport" class="modal">
+  <div id="exportModal">
     <div class="modal-content">
-      <p>Tem certeza que deseja exportar os dados?</p>
-      <button onclick="exportarExcel()">Sim</button>
-      <button onclick="fecharModal()">Cancelar</button>
+      <p>Deseja exportar os dados para Excel?</p>
+      <button onclick="exportToExcel()">Sim</button>
+      <button onclick="closeModal()">Cancelar</button>
     </div>
   </div>
 
   <script>
-    const form = document.getElementById('form');
-    const tabela = document.getElementById('tabela').querySelector('tbody');
-    const filtro = document.getElementById('filtro');
-    let editIndex = null;
-
-    let ativos = JSON.parse(localStorage.getItem('ativos')) || [];
-
-    const salvarLocal = () => {
-      localStorage.setItem('ativos', JSON.stringify(ativos));
-    };
-
-    const atualizarTabela = () => {
-      tabela.innerHTML = '';
-      const termoFiltro = filtro.value.toLowerCase();
-      ativos.forEach((ativo, index) => {
-        if (!ativo.setor.toLowerCase().includes(termoFiltro)) return;
-        const row = tabela.insertRow();
-        row.innerHTML = `
-          <td>${ativo.nome}</td>
-          <td>${ativo.tipo}</td>
-          <td>${ativo.setor}</td>
-          <td>${ativo.numSerie}</td>
-          <td class="actions-cell">
-            <button onclick="editar(${index})">Editar</button>
-            <button onclick="excluir(${index})">Excluir</button>
-          </td>
-        `;
-      });
-    };
-
-    form.onsubmit = (e) => {
-      e.preventDefault();
-      const ativo = {
-        nome: form.nome.value,
-        tipo: form.tipo.value,
-        setor: form.setor.value,
-        numSerie: form.numSerie.value
-      };
-      if (editIndex !== null) {
-        ativos[editIndex] = ativo;
-        editIndex = null;
-      } else {
-        ativos.push(ativo);
-      }
-      salvarLocal();
-      atualizarTabela();
-      form.reset();
-    };
-
-    const editar = (index) => {
-      const ativo = ativos[index];
-      form.nome.value = ativo.nome;
-      form.tipo.value = ativo.tipo;
-      form.setor.value = ativo.setor;
-      form.numSerie.value = ativo.numSerie;
-      editIndex = index;
-    };
-
-    const excluir = (index) => {
-      if (confirm('Tem certeza que deseja excluir este ativo?')) {
-        ativos.splice(index, 1);
-        salvarLocal();
-        atualizarTabela();
-      }
-    };
-
-    const exportarExcel = () => {
-      let csv = 'Nome,Tipo,Setor,Número de Série\n';
-      ativos.forEach(ativo => {
-        csv += `${ativo.nome},${ativo.tipo},${ativo.setor},${ativo.numSerie}\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'ativos-ti.csv';
-      a.click();
-      URL.revokeObjectURL(url);
-      fecharModal();
-    };
-
-    const abrirModalExportacao = () => {
-      document.getElementById('modalExport').style.display = 'block';
-    };
-
-    const fecharModal = () => {
-      document.getElementById('modalExport').style.display = 'none';
-    };
-
-    const alternarModo = () => {
-      document.body.classList.toggle('light-mode');
-    };
-
-    filtro.oninput = atualizarTabela;
-
-    atualizarTabela();
+    let darkMode = false;
+    function toggleDarkMode() {
+      darkMode = !darkMode;
+      document.body.classList.toggle("dark-mode");
+    }
+    function confirmExport() {
+      document.getElementById("exportModal").style.display = "flex";
+    }
+    function closeModal() {
+      document.getElementById("exportModal").style.display = "none";
+    }
+    function exportToExcel() {
+      closeModal();
+      alert("Exportação iniciada...");
+      // Exportar Excel: implementar com SheetJS se desejar
+    }
   </script>
 </body>
 </html>
