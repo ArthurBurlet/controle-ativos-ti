@@ -94,7 +94,7 @@
       </tbody>
     </table>
 
-    <button id="exportBtn" class="btn btn-primary">Exportar para Excel</button>
+    <button id="exportBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmExportModal">Exportar para Excel</button>
   </div>
 
   <!-- Modal de Novo Item -->
@@ -107,6 +107,7 @@
         </div>
         <div class="modal-body">
           <form id="itemForm">
+            <input type="hidden" id="editIndex">
             <div class="mb-3">
               <label for="nome" class="form-label">Nome</label>
               <input type="text" class="form-control" id="nome" required>
@@ -123,8 +124,44 @@
                 <option value="reserva">Reserva</option>
               </select>
             </div>
-            <button type="submit" class="btn btn-primary">Adicionar</button>
+            <button type="submit" class="btn btn-primary">Salvar</button>
           </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirmar Exclusão</h5>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja remover este item?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Remover</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exportação -->
+  <div class="modal fade" id="confirmExportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Exportar Dados</h5>
+        </div>
+        <div class="modal-body">
+          Deseja exportar os dados para um arquivo CSV?
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary" id="confirmExportBtn">Exportar</button>
         </div>
       </div>
     </div>
@@ -137,9 +174,11 @@
     const activeCount = document.getElementById('activeCount');
     const inactiveCount = document.getElementById('inactiveCount');
     const reservedCount = document.getElementById('reservedCount');
-    const exportBtn = document.getElementById('exportBtn');
+    const exportBtn = document.getElementById('confirmExportBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
     let itens = JSON.parse(localStorage.getItem('ativosTI')) || [];
+    let indexToDelete = null;
 
     function salvarLocalStorage() {
       localStorage.setItem('ativosTI', JSON.stringify(itens));
@@ -150,10 +189,18 @@
       const nome = document.getElementById('nome').value;
       const numeroSerie = document.getElementById('numeroSerie').value;
       const status = document.getElementById('status').value;
-      itens.push({ nome, numeroSerie, status });
+      const index = document.getElementById('editIndex').value;
+
+      if (index === '') {
+        itens.push({ nome, numeroSerie, status });
+      } else {
+        itens[index] = { nome, numeroSerie, status };
+      }
+
       salvarLocalStorage();
       atualizarTabela();
       form.reset();
+      document.getElementById('editIndex').value = '';
       const modal = bootstrap.Modal.getInstance(document.getElementById('itemModal'));
       modal.hide();
     });
@@ -167,7 +214,10 @@
           <td>${item.nome}</td>
           <td>${item.numeroSerie}</td>
           <td>${item.status}</td>
-          <td><button class="btn btn-danger btn-sm" onclick="removerItem(${index})">Remover</button></td>
+          <td>
+            <button class="btn btn-warning btn-sm" onclick="editarItem(${index})">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="confirmarRemocao(${index})">Remover</button>
+          </td>
         </tr>`;
         table.innerHTML += row;
 
@@ -182,10 +232,27 @@
       reservedCount.textContent = reservas;
     }
 
-    function removerItem(index) {
-      itens.splice(index, 1);
-      salvarLocalStorage();
-      atualizarTabela();
+    function confirmarRemocao(index) {
+      indexToDelete = index;
+      new bootstrap.Modal(document.getElementById('confirmDeleteModal')).show();
+    }
+
+    confirmDeleteBtn.addEventListener('click', () => {
+      if (indexToDelete !== null) {
+        itens.splice(indexToDelete, 1);
+        salvarLocalStorage();
+        atualizarTabela();
+        bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal')).hide();
+      }
+    });
+
+    function editarItem(index) {
+      const item = itens[index];
+      document.getElementById('nome').value = item.nome;
+      document.getElementById('numeroSerie').value = item.numeroSerie;
+      document.getElementById('status').value = item.status;
+      document.getElementById('editIndex').value = index;
+      new bootstrap.Modal(document.getElementById('itemModal')).show();
     }
 
     document.getElementById('darkModeToggle').addEventListener('click', () => {
@@ -207,6 +274,7 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      bootstrap.Modal.getInstance(document.getElementById('confirmExportModal')).hide();
     });
 
     atualizarTabela();
